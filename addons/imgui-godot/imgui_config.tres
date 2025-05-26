@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ImGuiConfig" load_steps=7 format=3 uid="uid://4e624tkttc1m"]
+
+[ext_resource type="FontFile" uid="uid://byt6fn8hsq36i" path="res://font/SourceCodePro-SemiBold.ttf" id="1_6ystb"]
+[ext_resource type="Script" uid="uid://docf7tef80m68" path="res://addons/imgui-godot/scripts/ImGuiConfig.gd" id="1_87kyj"]
+[ext_resource type="FontFile" uid="uid://ccesgh1o6ofwi" path="res://font/msyhbd.ttc" id="1_k6tx6"]
+[ext_resource type="Script" uid="uid://cvhd46g56osjy" path="res://addons/imgui-godot/scripts/ImGuiFont.gd" id="2_6ystb"]
+
+[sub_resource type="Resource" id="Resource_kbn0n"]
+script = ExtResource("2_6ystb")
+FontData = ExtResource("1_6ystb")
+FontSize = 22
+Merge = true
+metadata/_custom_type_script = "uid://cvhd46g56osjy"
+
+[sub_resource type="Resource" id="Resource_wf1xl"]
+script = ExtResource("2_6ystb")
+FontData = ExtResource("1_k6tx6")
+FontSize = 24
+Merge = true
+metadata/_custom_type_script = "uid://cvhd46g56osjy"
+
+[resource]
+script = ExtResource("1_87kyj")
+Scale = 1.0
+IniFilename = "user://imgui.ini"
+Renderer = "RenderingDevice"
+Layer = 128
+AddDefaultFont = true
+Fonts = [SubResource("Resource_kbn0n"), SubResource("Resource_wf1xl")]
+metadata/_custom_type_script = "uid://docf7tef80m68"

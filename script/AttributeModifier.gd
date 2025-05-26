@@ -11,16 +11,11 @@ enum OperationType {
 
 var type: OperationType
 var value: float
-var remaining_time: float
-var has_duration := false
 
-func _init(_type: OperationType = OperationType.ADD, _value: float = 0.0) -> void:
+
+func _init(_type: OperationType = OperationType.ADD, _value: float = 0.0):
 	type = _type
 	value = _value
-
-
-static func create(_type: OperationType, _base_value: float) -> AttributeModifier:
-	return AttributeModifier.new(_type, _base_value)
 
 
 static func add(_base_value: float) -> AttributeModifier:
@@ -47,11 +42,8 @@ static func forcefully_set_value(_base_value: float) -> AttributeModifier:
 	return create(OperationType.SET, _base_value)
 
 
-func set_duration(_time: float) -> AttributeModifier:
-	if _time > 0.0:
-		remaining_time = _time
-		has_duration = true
-	return self
+static func create(_type: OperationType, _base_value: float) -> AttributeModifier:
+	return AttributeModifier.new(_type, _base_value)
 
 
 func operate(_base_value: float) -> float:
@@ -60,5 +52,6 @@ func operate(_base_value: float) -> float:
 		OperationType.SUB: return _base_value - value
 		OperationType.MULT: return _base_value * value
 		OperationType.DIVIDE: return 0.0 if is_zero_approx(value) else _base_value / value
+		OperationType.PERCENTAGE: return _base_value + ((_base_value / 100.0) * value);
 		OperationType.SET: return value
 	return value

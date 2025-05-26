@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://caisg00tfeai4"]
+
+[ext_resource type="Script" uid="uid://bn72xy5gv5pjm" path="res://MainScene.gd" id="1_x4av3"]
+[ext_resource type="PackedScene" uid="uid://b67o7sebkfvrd" path="res://scene/character/MageCharacter.tscn" id="2_rpqi1"]
+[ext_resource type="PackedScene" uid="uid://bup5jb3rxfb6i" path="res://scene/character/WarriorCharacter.tscn" id="3_uxrcv"]
+
+[node name="MainScene" type="Node2D"]
+script = ExtResource("1_x4av3")
+
+[node name="MageCharacter" parent="." instance=ExtResource("2_rpqi1")]
+unique_name_in_owner = true
+position = Vector2(307, 181)
+
+[node name="WarriorCharacter" parent="." instance=ExtResource("3_uxrcv")]
+unique_name_in_owner = true
+position = Vector2(278, 181)

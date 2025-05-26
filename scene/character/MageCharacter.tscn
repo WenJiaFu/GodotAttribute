@@ -1,0 +1,40 @@
+[gd_scene load_steps=9 format=3 uid="uid://b67o7sebkfvrd"]
+
+[ext_resource type="PackedScene" uid="uid://27cpldo1juhl" path="res://scene/character/PlayerCharacter.tscn" id="1_p4ytv"]
+[ext_resource type="Script" uid="uid://bw4kf70rvxlww" path="res://script/Attribute.gd" id="2_0d8yw"]
+[ext_resource type="Script" uid="uid://cdcushggciuu1" path="res://script/AttributeSet.gd" id="3_toq42"]
+
+[sub_resource type="Resource" id="Resource_bgllc"]
+script = ExtResource("2_0d8yw")
+attribute_name = "max_health"
+base_value = 50.0
+metadata/_custom_type_script = "uid://bw4kf70rvxlww"
+
+[sub_resource type="Resource" id="Resource_nlhn4"]
+script = ExtResource("2_0d8yw")
+attribute_name = "health"
+base_value = 50.0
+metadata/_custom_type_script = "uid://bw4kf70rvxlww"
+
+[sub_resource type="Resource" id="Resource_x0t1g"]
+script = ExtResource("2_0d8yw")
+attribute_name = "attack"
+base_value = 30.0
+metadata/_custom_type_script = "uid://bw4kf70rvxlww"
+
+[sub_resource type="Resource" id="Resource_mccox"]
+script = ExtResource("2_0d8yw")
+attribute_name = "intell"
+base_value = 1.0
+metadata/_custom_type_script = "uid://bw4kf70rvxlww"
+
+[sub_resource type="Resource" id="Resource_5cqjl"]
+script = ExtResource("3_toq42")
+attributes = Array[ExtResource("2_0d8yw")]([SubResource("Resource_bgllc"), SubResource("Resource_nlhn4"), SubResource("Resource_x0t1g"), SubResource("Resource_mccox")])
+metadata/_custom_type_script = "uid://cdcushggciuu1"
+
+[node name="MageCharacter" instance=ExtResource("1_p4ytv")]
+character_name = "法师"
+
+[node name="AttributeComponent" parent="." index="2"]
+attribute_set = SubResource("Resource_5cqjl")
