@@ -17,6 +17,8 @@ func setter_attributes(v):
 
 	_create_runtime_attributes()
 	_create_derived_attributes()
+	## 运行时数据和依赖关系建立好之后，初始化属性数值
+	_init_runtime_attributes()
 #endregion
 
 
@@ -45,7 +47,7 @@ func _create_runtime_attributes():
 			continue
 
 		var duplicated_attribute = attr.duplicate(true) as Attribute
-		duplicated_attribute.attribute_set = weakref(self) as AttributeSet
+		duplicated_attribute.attribute_set = weakref(self)
 		attributes_runtime_dict[attr.attribute_name] = duplicated_attribute
 		## 监听属性变化
 		duplicated_attribute.attribute_changed.connect(_on_attribute_changed)
@@ -69,6 +71,20 @@ func _create_derived_attributes():
 			relative_attributes.append(runtime_attribute)
 
 
-func _on_attribute_changed(_attribute: Attribute):
-	pass
-#endregion`
+func _init_runtime_attributes():
+	for _name in attributes_runtime_dict:
+		var runtime_attribute = attributes_runtime_dict[_name]
+		var base_value = runtime_attribute.get_base_value()
+		runtime_attribute.set_value(base_value)
+
+
+func _on_attribute_changed(attribute: Attribute):
+	_update_derived_attributes(attribute)
+
+
+func _update_derived_attributes(derived_attribute: Attribute):
+	if derived_attributes_dict.has(derived_attribute.attribute_name):
+		var relative_attributes = derived_attributes_dict[derived_attribute.attribute_name]
+		for attribute in relative_attributes:
+			attribute.update_computed_value()
+#endregion

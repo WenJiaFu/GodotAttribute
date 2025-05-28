@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AttributeBuff" load_steps=2 format=3 uid="uid://bq5ewi6by5jol"]
+
+[ext_resource type="Script" uid="uid://dkwrihpi0kobp" path="res://script/AttributeBuff.gd" id="1_x87q2"]
+
+[resource]
+script = ExtResource("1_x87q2")
+buff_name = "HealthEnhance"
+operation = 2
+value = 2.0
+policy = 0
+duration = 0.0
+metadata/_custom_type_script = "uid://dkwrihpi0kobp"

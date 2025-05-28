@@ -17,3 +17,7 @@ func _ready() -> void:
 
 func get_attribute_set() -> AttributeSet:
 	return attribute_component.attribute_set
+
+
+func get_attribute(_attribute_name: String) -> Attribute:
+	return attribute_component.find_attribute(_attribute_name)

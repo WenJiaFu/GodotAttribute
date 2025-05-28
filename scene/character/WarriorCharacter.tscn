@@ -1,7 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://bup5jb3rxfb6i"]
+[gd_scene load_steps=10 format=3 uid="uid://bup5jb3rxfb6i"]
 
 [ext_resource type="PackedScene" uid="uid://27cpldo1juhl" path="res://scene/character/PlayerCharacter.tscn" id="1_dyv6a"]
 [ext_resource type="Script" uid="uid://bw4kf70rvxlww" path="res://script/Attribute.gd" id="2_u866g"]
+[ext_resource type="Script" uid="uid://byfoak0mg8h02" path="res://resource/attribute/HealthAttribute.gd" id="3_ohuwl"]
+[ext_resource type="Resource" uid="uid://bf7sgfupxu7rq" path="res://resource/attribute/AttackAttribute.tres" id="3_s2w1m"]
 [ext_resource type="Script" uid="uid://cdcushggciuu1" path="res://script/AttributeSet.gd" id="3_sna6v"]
 
 [sub_resource type="Resource" id="Resource_s2w1m"]
@@ -10,17 +12,11 @@ attribute_name = "max_health"
 base_value = 100.0
 metadata/_custom_type_script = "uid://bw4kf70rvxlww"
 
-[sub_resource type="Resource" id="Resource_ohuwl"]
-script = ExtResource("2_u866g")
+[sub_resource type="Resource" id="Resource_7fbxr"]
+script = ExtResource("3_ohuwl")
 attribute_name = "health"
 base_value = 100.0
-metadata/_custom_type_script = "uid://bw4kf70rvxlww"
-
-[sub_resource type="Resource" id="Resource_7fbxr"]
-script = ExtResource("2_u866g")
-attribute_name = "attack"
-base_value = 10.0
-metadata/_custom_type_script = "uid://bw4kf70rvxlww"
+metadata/_custom_type_script = "uid://byfoak0mg8h02"
 
 [sub_resource type="Resource" id="Resource_otqsc"]
 script = ExtResource("2_u866g")
@@ -30,7 +26,7 @@ metadata/_custom_type_script = "uid://bw4kf70rvxlww"
 
 [sub_resource type="Resource" id="Resource_oftqe"]
 script = ExtResource("3_sna6v")
-attributes = Array[ExtResource("2_u866g")]([SubResource("Resource_s2w1m"), SubResource("Resource_ohuwl"), SubResource("Resource_7fbxr"), SubResource("Resource_otqsc")])
+attributes = Array[ExtResource("2_u866g")]([SubResource("Resource_s2w1m"), SubResource("Resource_7fbxr"), ExtResource("3_s2w1m"), SubResource("Resource_otqsc")])
 metadata/_custom_type_script = "uid://cdcushggciuu1"
 
 [node name="WarriorCharacter" instance=ExtResource("1_dyv6a")]

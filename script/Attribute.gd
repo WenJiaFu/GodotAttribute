@@ -20,7 +20,9 @@ var is_initialized_base_value = false
 var buffs: Array[AttributeBuff] = []
 
 ## 该属性位于的属性集
-var attribute_set: AttributeSet
+var attribute_set:
+	get():
+		return attribute_set.get_ref()
 
 
 #region setter
@@ -39,6 +41,14 @@ func setter_computed_value(v):
 
 
 #region 外部函数
+func notify_attribute_changed():
+	attribute_changed.emit(self)
+
+
+func update_computed_value():
+	computed_value = _compute_value(computed_value)
+
+
 ## 由外部驱动（AttributeSet）
 func run_process(delta: float):
 	var pending_remove_buffs: Array[AttributeBuff] = []
@@ -54,13 +64,14 @@ func run_process(delta: float):
 
 
 func get_base_value() -> float:
-	return computed_value
+	return base_value
 
 
 func get_value() -> float:
 	var attribute_value = computed_value
 	for _buff in buffs:
 		attribute_value = _buff.operate(attribute_value)
+	attribute_value = post_attribute_value_changed(attribute_value)
 	return attribute_value
 
 
@@ -89,15 +100,51 @@ func div(_value: float):
 	computed_value = _compute_value(operated_value)
 
 
-func add_buff(_buff: AttributeBuff):
-	## 是否需要duplicate一个新的buff再增加？
-	buffs.append(_buff)
-	buff_added.emit(self, _buff)
+func get_buff_size() -> int:
+	return buffs.size()
+
+## @ return: 返回duplicated之后的buff引用，remove_buff需传入此引用。
+func add_buff(_buff: AttributeBuff) -> AttributeBuff:
+	if not is_instance_valid(_buff):
+		return null
+
+	var should_append_buff = true
+	var pending_add_buff = _buff
+
+	## 有命名的Buff时，处理重复Buff的duration逻辑
+	if not _buff.buff_name.is_empty():
+		var existing_buff = find_buff(_buff.buff_name)
+		if is_instance_valid(existing_buff):
+			match existing_buff.merging:
+				AttributeBuff.DurationMerging.Restart: existing_buff.restart_duration()
+				AttributeBuff.DurationMerging.Addtion: existing_buff.extend_duration(existing_buff.duration)
+			pending_add_buff = existing_buff
+			should_append_buff = false
+
+	if should_append_buff:
+		var duplicated_buff = _buff.duplicate_buff()
+		buffs.append(duplicated_buff)
+		pending_add_buff = duplicated_buff
+
+	buff_added.emit(self, pending_add_buff)
+	attribute_changed.emit(self)
+	return pending_add_buff
 
 
 func remove_buff(_buff: AttributeBuff):
+	if not is_instance_valid(_buff):
+		return
+
 	buffs.erase(_buff)
 	buff_removed.emit(self, _buff)
+	attribute_changed.emit(self)
+
+
+func find_buff(buff_name: String) -> AttributeBuff:
+	for _buff in buffs:
+		if _buff.buff_name == buff_name:
+			return _buff
+	return null
 #endregion
 
 #region 子类继承实现
@@ -112,10 +159,16 @@ func custom_compute(operated_value: float, _compute_params: Array[Attribute]) ->
 ## @ return: 返回依赖属性的名称数组
 func derived_from() -> Array[String]:
 	return []
+
+
+## 属性数值最后发生改变的事件，即完成公式计算和Buff叠加后的数值。
+## 可以在此做一些clamp操作
+func post_attribute_value_changed(_value: float) -> float:
+	return _value
 #endregion
 
 #region 内部函数
-## 重新计算computed_value（由计算公式返回的值）
+## 重新计算computed_value = 计算公式返回的值(custom_compute)
 func _compute_value(_operated_value: float) -> float:
 	var derived_attributs: Array[Attribute] = []
 	var derived_attribute_names = derived_from()

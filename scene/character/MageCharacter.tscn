@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://b67o7sebkfvrd"]
+[gd_scene load_steps=10 format=3 uid="uid://b67o7sebkfvrd"]
 
 [ext_resource type="PackedScene" uid="uid://27cpldo1juhl" path="res://scene/character/PlayerCharacter.tscn" id="1_p4ytv"]
 [ext_resource type="Script" uid="uid://bw4kf70rvxlww" path="res://script/Attribute.gd" id="2_0d8yw"]
+[ext_resource type="Script" uid="uid://byfoak0mg8h02" path="res://resource/attribute/HealthAttribute.gd" id="3_bgllc"]
 [ext_resource type="Script" uid="uid://cdcushggciuu1" path="res://script/AttributeSet.gd" id="3_toq42"]
 
 [sub_resource type="Resource" id="Resource_bgllc"]
@@ -11,15 +12,15 @@ base_value = 50.0
 metadata/_custom_type_script = "uid://bw4kf70rvxlww"
 
 [sub_resource type="Resource" id="Resource_nlhn4"]
-script = ExtResource("2_0d8yw")
+script = ExtResource("3_bgllc")
 attribute_name = "health"
-base_value = 50.0
-metadata/_custom_type_script = "uid://bw4kf70rvxlww"
+base_value = 100.0
+metadata/_custom_type_script = "uid://byfoak0mg8h02"
 
-[sub_resource type="Resource" id="Resource_x0t1g"]
+[sub_resource type="Resource" id="Resource_0d8yw"]
 script = ExtResource("2_0d8yw")
 attribute_name = "attack"
-base_value = 30.0
+base_value = 10.0
 metadata/_custom_type_script = "uid://bw4kf70rvxlww"
 
 [sub_resource type="Resource" id="Resource_mccox"]
@@ -30,7 +31,7 @@ metadata/_custom_type_script = "uid://bw4kf70rvxlww"
 
 [sub_resource type="Resource" id="Resource_5cqjl"]
 script = ExtResource("3_toq42")
-attributes = Array[ExtResource("2_0d8yw")]([SubResource("Resource_bgllc"), SubResource("Resource_nlhn4"), SubResource("Resource_x0t1g"), SubResource("Resource_mccox")])
+attributes = Array[ExtResource("2_0d8yw")]([SubResource("Resource_bgllc"), SubResource("Resource_nlhn4"), SubResource("Resource_0d8yw"), SubResource("Resource_mccox")])
 metadata/_custom_type_script = "uid://cdcushggciuu1"
 
 [node name="MageCharacter" instance=ExtResource("1_p4ytv")]

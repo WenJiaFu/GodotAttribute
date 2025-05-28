@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AttackAttribute" load_steps=2 format=3 uid="uid://bf7sgfupxu7rq"]
+
+[ext_resource type="Script" uid="uid://cvro1y5xgfqo" path="res://resource/attribute/AttackAttribute.gd" id="1_6oli7"]
+
+[resource]
+script = ExtResource("1_6oli7")
+attack_point_per_strength = 3.0
+attribute_name = "attack"
+base_value = 1.0
+metadata/_custom_type_script = "uid://cvro1y5xgfqo"
