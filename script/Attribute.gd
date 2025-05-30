@@ -103,6 +103,7 @@ func div(_value: float):
 func get_buff_size() -> int:
 	return buffs.size()
 
+
 ## @ return: 返回duplicated之后的buff引用，remove_buff需传入此引用。
 func add_buff(_buff: AttributeBuff) -> AttributeBuff:
 	if not is_instance_valid(_buff):
@@ -168,13 +169,12 @@ func post_attribute_value_changed(_value: float) -> float:
 #endregion
 
 #region 内部函数
-## 重新计算computed_value = 计算公式返回的值(custom_compute)
+## 由计算公式返回数值结果(custom_compute)
 func _compute_value(_operated_value: float) -> float:
 	var derived_attributs: Array[Attribute] = []
 	var derived_attribute_names = derived_from()
 	for _name in derived_attribute_names:
 		var attribute = attribute_set.find_attribute(_name)
 		derived_attributs.append(attribute)
-	computed_value = custom_compute(_operated_value, derived_attributs)
-	return computed_value
+	return custom_compute(_operated_value, derived_attributs)
 #endregion

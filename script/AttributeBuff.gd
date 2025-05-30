@@ -66,6 +66,10 @@ func has_duration() -> bool:
 	return policy == DurationPolicy.HasDuration
 
 
+func set_merging(_mergin: DurationMerging):
+	merging = _mergin
+
+
 func set_duration(_time: float) -> AttributeBuff:
 	duration = _time
 	remaining_time = duration

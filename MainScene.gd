@@ -25,6 +25,9 @@ class CharacterImguiData:
 	var buff_operate_radio_actives: Array[bool] = [true, false, false, false, false]
 	var buff_policy_radio_names: Array[String] = ["持久的 ", "有时效 "]
 	var buff_policy_radio_actives: Array[bool] = [true, false]
+	var buff_merging_radio_names: Array[String] = ["重置 ", "延长 ", "无影响"]
+	var buff_merging_radio_actives: Array[bool] = [true, false, false]
+
 
 	func get_select_attribute_name() -> String:
 		var index = attribute_combo_index[0]
@@ -41,6 +44,13 @@ class CharacterImguiData:
 	func get_policy_type() -> AttributeBuff.DurationPolicy:
 		return AttributeBuff.DurationPolicy.Infinite if buff_policy_radio_actives[0] else AttributeBuff.DurationPolicy.HasDuration
 
+	func get_merging_type() -> AttributeBuff.DurationMerging:
+		var merging_type := AttributeBuff.DurationMerging.Restart
+		for i in buff_merging_radio_actives.size():
+			if buff_merging_radio_actives[i]:
+				merging_type = i as AttributeBuff.DurationMerging
+				break
+		return merging_type
 
 	func active_operate_radio(index: int):
 		for i in buff_operate_radio_actives.size():
@@ -50,12 +60,18 @@ class CharacterImguiData:
 		for i in buff_policy_radio_actives.size():
 			buff_policy_radio_actives[i] = index == i
 
+	func active_merging_radio(index: int):
+		for i in buff_merging_radio_actives.size():
+			buff_merging_radio_actives[i] = index == i
+
 	func is_actived_operate_radio(index: int) -> bool:
 		return buff_operate_radio_actives[index]
 
 	func is_actived_policy_radio(index: int) -> bool:
 		return buff_policy_radio_actives[index]
 
+	func is_actived_merging_radio(index: int) -> bool:
+		return buff_merging_radio_actives[index]
 
 var character_imgui_data_dict: Dictionary[PlayerCharacter, CharacterImguiData] = {}
 
@@ -227,6 +243,15 @@ func imgui_attribute_buff(_pawn: PlayerCharacter):
 		if ImGui.RadioButton("%s##policy" % _name, _active):
 			imgui_data.active_policy_radio(i)
 		ImGui.SameLine()
+	ImGui.Text("")
+
+	## merging radio button
+	for i in imgui_data.buff_merging_radio_names.size():
+		var _name = imgui_data.buff_merging_radio_names[i]
+		var _active = imgui_data.is_actived_merging_radio(i)
+		if ImGui.RadioButton("%s##merging" % _name, _active):
+			imgui_data.active_merging_radio(i)
+		ImGui.SameLine()
 
 	## duration
 	ImGui.PushItemWidth(80.0)
@@ -307,9 +332,12 @@ func handle_buff_addtion(_pawn: PlayerCharacter):
 	var buff_duration = imgui_data.buff_duration_value[0]
 	var buff_operate = imgui_data.get_operate_type()
 	var buff_policy = imgui_data.get_policy_type()
+	var buff_merging = imgui_data.get_merging_type()
 	var butt_instance = AttributeBuff.new(buff_operate, buff_value, buff_name)
 	if buff_policy == AttributeBuff.DurationPolicy.HasDuration:
 		butt_instance.set_duration(buff_duration)
+		butt_instance.set_merging(buff_merging)
+
 	## 增加Buff（_process内，延迟调用）
 	attribute.call_deferred("add_buff", butt_instance)
 
