@@ -54,6 +54,12 @@ func run_process(delta: float):
 	var pending_remove_buffs: Array[AttributeBuff] = []
 	## 准备删除
 	for _buff in buffs:
+		## 执行DOTBUFF
+		if _buff is AttributeBuffDOT:
+			if not _buff.dot_triggered.is_connected(_on_dot_triggered):
+				_buff.dot_triggered.connect(_on_dot_triggered)
+			_buff.run_process(delta)
+			
 		if _buff.has_duration():
 			_buff.remaining_time = max(_buff.remaining_time - delta, 0.0)
 			if is_zero_approx(_buff.remaining_time):
@@ -62,6 +68,13 @@ func run_process(delta: float):
 	for _buff in pending_remove_buffs:
 		remove_buff(_buff)
 
+func _on_dot_triggered(buff: AttributeBuffDOT, dot_value: float):
+	match buff.dot_operation:
+		AttributeModifier.OperationType.ADD:add(dot_value)
+		AttributeModifier.OperationType.SUB:sub(dot_value)
+		AttributeModifier.OperationType.MULT:mult(dot_value)
+		AttributeModifier.OperationType.DIVIDE:div(dot_value)
+		AttributeModifier.OperationType.SET:set_value(dot_value)
 
 func get_base_value() -> float:
 	return base_value
