@@ -27,13 +27,20 @@ class CharacterImguiData:
 	var buff_policy_radio_actives: Array[bool] = [true, false]
 	var buff_merging_radio_names: Array[String] = ["重置 ", "延长 ", "无影响"]
 	var buff_merging_radio_actives: Array[bool] = [true, false, false]
-
+	## DOT数据
+	var dot_name: Array[String] = [""]
+	var dot_input_value: Array[float] = [0.0]
+	var dot_period_value: Array[float] = [0.0]
+	var dot_charges_value: Array[int] = [0]
+	var dot_operate_radio_names: Array[String] = ["+ ", "- ", "* ", "/ ", "= "]
+	var dot_operate_radio_actives: Array[bool] = [true, false, false, false, false]
 
 	func get_select_attribute_name() -> String:
 		var index = attribute_combo_index[0]
 		return attribute_combo_items[index]
 
-	func get_operate_type() -> AttributeModifier.OperationType:
+#region BUFF
+	func get_buff_operate_type() -> AttributeModifier.OperationType:
 		var operate_type := AttributeModifier.OperationType.ADD
 		for i in buff_operate_radio_actives.size():
 			if buff_operate_radio_actives[i]:
@@ -41,10 +48,10 @@ class CharacterImguiData:
 				break
 		return operate_type
 
-	func get_policy_type() -> AttributeBuff.DurationPolicy:
+	func get_buff_policy_type() -> AttributeBuff.DurationPolicy:
 		return AttributeBuff.DurationPolicy.Infinite if buff_policy_radio_actives[0] else AttributeBuff.DurationPolicy.HasDuration
 
-	func get_merging_type() -> AttributeBuff.DurationMerging:
+	func get_buff_merging_type() -> AttributeBuff.DurationMerging:
 		var merging_type := AttributeBuff.DurationMerging.Restart
 		for i in buff_merging_radio_actives.size():
 			if buff_merging_radio_actives[i]:
@@ -52,26 +59,44 @@ class CharacterImguiData:
 				break
 		return merging_type
 
-	func active_operate_radio(index: int):
+	func active_buff_operate_radio(index: int):
 		for i in buff_operate_radio_actives.size():
 			buff_operate_radio_actives[i] = index == i
 
-	func active_policy_radio(index: int):
+	func active_buff_policy_radio(index: int):
 		for i in buff_policy_radio_actives.size():
 			buff_policy_radio_actives[i] = index == i
 
-	func active_merging_radio(index: int):
+	func active_buff_merging_radio(index: int):
 		for i in buff_merging_radio_actives.size():
 			buff_merging_radio_actives[i] = index == i
 
-	func is_actived_operate_radio(index: int) -> bool:
+	func is_buff_actived_operate_radio(index: int) -> bool:
 		return buff_operate_radio_actives[index]
 
-	func is_actived_policy_radio(index: int) -> bool:
+	func is_buff_actived_policy_radio(index: int) -> bool:
 		return buff_policy_radio_actives[index]
 
-	func is_actived_merging_radio(index: int) -> bool:
+	func is_buff_actived_merging_radio(index: int) -> bool:
 		return buff_merging_radio_actives[index]
+#endregion
+#region DOT
+	func get_dot_operate_type() -> AttributeModifier.OperationType:
+		var operate_type := AttributeModifier.OperationType.ADD
+		for i in dot_operate_radio_actives.size():
+			if dot_operate_radio_actives[i]:
+				operate_type = i as AttributeModifier.OperationType
+				break
+		return operate_type
+
+	func active_dot_operate_radio(index: int):
+		for i in dot_operate_radio_actives.size():
+			dot_operate_radio_actives[i] = index == i
+
+	func is_dot_actived_operate_radio(index: int) -> bool:
+		return dot_operate_radio_actives[index]
+#endregion
+
 
 var character_imgui_data_dict: Dictionary[PlayerCharacter, CharacterImguiData] = {}
 
@@ -154,8 +179,11 @@ func imgui_attribute_list(pawn: PlayerCharacter):
 				var show_buff_name = "unknow" if _buff.buff_name.is_empty() else _buff.buff_name
 				var buff_stat = "name[%s] operate[%s] value[%.02f] policy[%s]" % \
 					[show_buff_name, operate_name, _buff.value, policy_name]
-				if _buff.has_duration():
-					var remaining_stat = " %.02f" % _buff.remaining_time
+				if _buff.policy == AttributeBuff.DurationPolicy.HasDuration:
+					var remaining_stat = " %.02f/%.02f" % [_buff.remaining_time, _buff.duration]
+					buff_stat = buff_stat + remaining_stat
+				if _buff.policy == AttributeBuff.DurationPolicy.Period:
+					var remaining_stat = " %.02f/%.02f | %d/%d" % [_buff.cycle_time, _buff.period, _buff.charges, _buff.max_charges]
 					buff_stat = buff_stat + remaining_stat
 				ImGui.Text(buff_stat)
 
@@ -180,6 +208,9 @@ func imgui_attribute_modifier(pawn: PlayerCharacter):
 		ImGui.EndTabItem()
 	if ImGui.BeginTabItem("BUFF"):
 		imgui_attribute_buff(pawn)
+		ImGui.EndTabItem()
+	if ImGui.BeginTabItem("DOT"):
+		imgui_attribute_dot(pawn)
 		ImGui.EndTabItem()
 	ImGui.EndTabBar()
 
@@ -225,9 +256,9 @@ func imgui_attribute_buff(_pawn: PlayerCharacter):
 	var imgui_data = character_imgui_data_dict[_pawn]
 	for i in imgui_data.buff_operate_radio_names.size():
 		var _name = imgui_data.buff_operate_radio_names[i]
-		var _active = imgui_data.is_actived_operate_radio(i)
+		var _active = imgui_data.is_buff_actived_operate_radio(i)
 		if ImGui.RadioButton("%s##operate" % _name, _active):
-			imgui_data.active_operate_radio(i)
+			imgui_data.active_buff_operate_radio(i)
 		ImGui.SameLine()
 
 	## buff value
@@ -239,18 +270,18 @@ func imgui_attribute_buff(_pawn: PlayerCharacter):
 	## policy radio button
 	for i in imgui_data.buff_policy_radio_names.size():
 		var _name = imgui_data.buff_policy_radio_names[i]
-		var _active = imgui_data.is_actived_policy_radio(i)
+		var _active = imgui_data.is_buff_actived_policy_radio(i)
 		if ImGui.RadioButton("%s##policy" % _name, _active):
-			imgui_data.active_policy_radio(i)
+			imgui_data.active_buff_policy_radio(i)
 		ImGui.SameLine()
 	ImGui.Text("")
 
 	## merging radio button
 	for i in imgui_data.buff_merging_radio_names.size():
 		var _name = imgui_data.buff_merging_radio_names[i]
-		var _active = imgui_data.is_actived_merging_radio(i)
+		var _active = imgui_data.is_buff_actived_merging_radio(i)
 		if ImGui.RadioButton("%s##merging" % _name, _active):
-			imgui_data.active_merging_radio(i)
+			imgui_data.active_buff_merging_radio(i)
 		ImGui.SameLine()
 
 	## duration
@@ -269,6 +300,41 @@ func imgui_attribute_buff(_pawn: PlayerCharacter):
 	ImGui.PushItemWidth(160)
 	ImGui.InputText("名称", character_imgui_data_dict[_pawn].buff_name, 512)
 	ImGui.PopItemWidth()
+
+
+func imgui_attribute_dot(_pawn: PlayerCharacter):
+	## operate radio button
+	var imgui_data = character_imgui_data_dict[_pawn]
+	for i in imgui_data.dot_operate_radio_names.size():
+		var _name = imgui_data.dot_operate_radio_names[i]
+		var _active = imgui_data.is_dot_actived_operate_radio(i)
+		if ImGui.RadioButton("%s##operate" % _name, _active):
+			imgui_data.active_dot_operate_radio(i)
+		ImGui.SameLine()
+
+	## dot value
+	var dot_input_value = character_imgui_data_dict[_pawn].dot_input_value
+	ImGui.PushItemWidth(80.0)
+	ImGui.InputFloat("数值##dot_value %d" % _pawn.get_instance_id(), dot_input_value)
+	ImGui.PopItemWidth()
+
+	## dot charges
+	var dot_charges_value = character_imgui_data_dict[_pawn].dot_charges_value
+	ImGui.PushItemWidth(120.0)
+	ImGui.InputInt("次数##dot_charges %d" % _pawn.get_instance_id(), dot_charges_value)
+	ImGui.PopItemWidth()
+
+	## dot interval
+	var dot_period_value = character_imgui_data_dict[_pawn].dot_period_value
+	ImGui.PushItemWidth(80.0)
+	ImGui.InputFloat("时间周期##dot_period %d" % _pawn.get_instance_id(), dot_period_value)
+	ImGui.PopItemWidth()
+
+	## add buff button
+	ImGui.PushStyleColor(ImGui.Col_Button, Color.DARK_SLATE_GRAY)
+	if ImGui.ButtonEx("增加DOT", Vector2(100, 0.0)):
+		handle_dot_addtion(_pawn)
+	ImGui.PopStyleColor()
 
 
 func _init_character_attribute_cached(_characters: Array[PlayerCharacter]):
@@ -330,9 +396,9 @@ func handle_buff_addtion(_pawn: PlayerCharacter):
 	var buff_name = imgui_data.buff_name[0]
 	var buff_value = imgui_data.buff_input_value[0]
 	var buff_duration = imgui_data.buff_duration_value[0]
-	var buff_operate = imgui_data.get_operate_type()
-	var buff_policy = imgui_data.get_policy_type()
-	var buff_merging = imgui_data.get_merging_type()
+	var buff_operate = imgui_data.get_buff_operate_type()
+	var buff_policy = imgui_data.get_buff_policy_type()
+	var buff_merging = imgui_data.get_buff_merging_type()
 	var butt_instance = AttributeBuff.new(buff_operate, buff_value, buff_name)
 	if buff_policy == AttributeBuff.DurationPolicy.HasDuration:
 		butt_instance.set_duration(buff_duration)
@@ -340,6 +406,23 @@ func handle_buff_addtion(_pawn: PlayerCharacter):
 
 	## 增加Buff（_process内，延迟调用）
 	attribute.call_deferred("add_buff", butt_instance)
+
+
+func handle_dot_addtion(_pawn: PlayerCharacter):
+	var imgui_data = character_imgui_data_dict[_pawn]
+	var attribute_name = imgui_data.get_select_attribute_name()
+	var attribute = _pawn.get_attribute(attribute_name)
+
+	## 获取Dot数值
+	var dot_name = imgui_data.dot_name[0]
+	var dot_value = imgui_data.dot_input_value[0]
+	var dot_period = imgui_data.dot_period_value[0]
+	var dot_charges = imgui_data.dot_charges_value[0]
+	var dot_operate = imgui_data.get_dot_operate_type()
+	var dot_instance = AttributeBuffDOT.new(dot_operate, dot_value, dot_period, dot_charges, dot_name)
+
+	## 增加Dot（_process内，延迟调用）
+	attribute.call_deferred("add_buff", dot_instance)
 
 
 func _on_attribute_changed(_attribute: Attribute, _pawn: PlayerCharacter):

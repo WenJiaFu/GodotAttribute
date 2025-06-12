@@ -1,62 +1,4 @@
-extends AttributeBuff
-class_name AttributeBuffDOT
-
-## DOT间隔
-@export var dot_interval: float = 1.0
-## DOT数值
-@export var dot_value: float = 0.0
-## DOT操作符
-@export var dot_operation: AttributeModifier.OperationType = AttributeModifier.OperationType.SUB
-## DOT总次数 0为无限次
-@export var total_dot_count: int = 0
-
-var dot_timer: float = 0.0
-var dot_count: int = 0
-
-signal dot_triggered(buff: AttributeBuffDOT, dot_value: float)
-
-static func create_dot(
-	dot_value: float, 
-	dot_interval: float = 1.0, 
-	total_dot_count: int = 0,
-	dot_operation: AttributeModifier.OperationType = AttributeModifier.OperationType.SUB,
-	buff_name: String = ""
-) -> AttributeBuffDOT:
-	var dot_buff = AttributeBuffDOT.new()
-	dot_buff.dot_value = dot_value
-	dot_buff.dot_interval = dot_interval
-	dot_buff.total_dot_count = total_dot_count
-	dot_buff.dot_operation = dot_operation
-	dot_buff.buff_name = buff_name
-	## 这里一定要是0，我不希望DOT Buff临时修改数值
-	dot_buff.value = 0
-	return dot_buff
-
-func run_process(delta: float):
-	if total_dot_count > 0 and dot_count >= total_dot_count:
-		return
-	dot_timer += delta
-	
-	if dot_timer >= dot_interval:
-		dot_timer = fmod(dot_timer, dot_interval)
-		_trigger_dot()
-
-func _trigger_dot():
-	dot_triggered.emit(self, dot_value)
-	dot_count += 1
-	if total_dot_count > 0 and dot_count >= total_dot_count:
-		remaining_time = 0.0
-
-func duplicate_buff() -> AttributeBuff:
-	var duplicated = super.duplicate_buff() as AttributeBuffDOT
-	duplicated.dot_interval = dot_interval
-	duplicated.dot_value = dot_value
-	duplicated.dot_operation = dot_operation
-	duplicated.total_dot_count = total_dot_count
-	duplicated.dot_timer = 0.0
-	duplicated.dot_count = 0
-	return duplicated
-
+class_name AttributeBuffDOT extends AttributeBuff
 
 '''
 示例
@@ -71,3 +13,55 @@ func poison_buff() -> AttributeBuffDOT:
 
 创建一个中毒buff持续5秒，每0.5秒造成1点伤害，执行无数次直到buff结束
 '''
+
+signal dot_triggered(buff: AttributeBuffDOT)
+
+## DOT周期
+@export var period: float = 1.0
+## DOT总次数 0为无限次
+@export var max_charges: int = 0
+
+var cycle_time: float = 0.0
+var charges: int = 0
+
+func _init(_operation := AttributeModifier.OperationType.ADD, _value: float = 0.0, _period: float = 1.0, _max_charges: int = 0, _name := ""):
+	attribute_modifier = AttributeModifier.new(_operation, _value)
+	operation = _operation
+	value = _value
+	buff_name = _name
+	policy = DurationPolicy.Period
+	period = _period
+	max_charges = _max_charges
+
+
+func duplicate_buff() -> AttributeBuff:
+	var duplicated = super.duplicate_buff() as AttributeBuffDOT
+	duplicated.period = period
+	duplicated.cycle_time = cycle_time
+	duplicated.charges = charges
+	return duplicated
+
+
+func run_process(delta: float):
+	if is_pending_remove:
+		return
+
+	if max_charges > 0 and charges >= max_charges:
+		is_pending_remove = true
+		return
+
+	_try_to_trigger_dot(delta)
+
+
+func _try_to_trigger_dot(delta: float):
+	cycle_time += delta
+	if cycle_time >= period:
+		cycle_time = fmod(cycle_time, period)
+		charges += 1
+		apply_to_attribute()
+
+
+func apply_to_attribute():
+	if is_instance_valid(applied_attribute):
+		applied_attribute.apply_buff_operation(self)
+		dot_triggered.emit(self)

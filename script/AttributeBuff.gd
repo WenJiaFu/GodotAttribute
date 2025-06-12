@@ -13,6 +13,7 @@ class_name AttributeBuff extends Resource
 enum DurationPolicy {
 	Infinite,		## 持久地
 	HasDuration,	## 有时效性地
+	Period,			## 周期性地
 }
 
 enum DurationMerging {
@@ -23,6 +24,10 @@ enum DurationMerging {
 
 var attribute_modifier: AttributeModifier
 var remaining_time: float
+var is_pending_remove := false
+var applied_attribute:
+	get():
+		return applied_attribute.get_ref() if is_instance_valid(applied_attribute) else null
 
 func _init(_operation := AttributeModifier.OperationType.ADD, _value: float = 0.0, _name := ""):
 	attribute_modifier = AttributeModifier.new(_operation, _value)
@@ -40,6 +45,14 @@ func duplicate_buff() -> AttributeBuff:
 		duplicated_buff.set_duration(duration)
 		return duplicated_buff
 	return null
+
+
+## 由应用目标属性驱动
+func run_process(delta: float):
+	if has_duration() and not is_pending_remove:
+		remaining_time = max(remaining_time - delta, 0.0)
+		if is_zero_approx(remaining_time):
+			is_pending_remove = true
 
 
 static func add(_value: float = 0.0, _name := "") -> AttributeBuff:
@@ -73,7 +86,8 @@ func set_merging(_mergin: DurationMerging):
 func set_duration(_time: float) -> AttributeBuff:
 	duration = _time
 	remaining_time = duration
-	policy = DurationPolicy.HasDuration if duration > 0.0 else DurationPolicy.Infinite
+	if duration > 0.0:
+		policy = DurationPolicy.HasDuration
 	return self
 
 

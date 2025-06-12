@@ -52,29 +52,17 @@ func update_computed_value():
 ## 由外部驱动（AttributeSet）
 func run_process(delta: float):
 	var pending_remove_buffs: Array[AttributeBuff] = []
+
 	## 准备删除
 	for _buff in buffs:
-		## 执行DOTBUFF
-		if _buff is AttributeBuffDOT:
-			if not _buff.dot_triggered.is_connected(_on_dot_triggered):
-				_buff.dot_triggered.connect(_on_dot_triggered)
-			_buff.run_process(delta)
-			
-		if _buff.has_duration():
-			_buff.remaining_time = max(_buff.remaining_time - delta, 0.0)
-			if is_zero_approx(_buff.remaining_time):
-				pending_remove_buffs.append(_buff)
+		_buff.run_process(delta)
+		if _buff.is_pending_remove:
+			pending_remove_buffs.append(_buff)
+
 	## 确认删除
 	for _buff in pending_remove_buffs:
 		remove_buff(_buff)
 
-func _on_dot_triggered(buff: AttributeBuffDOT, dot_value: float):
-	match buff.dot_operation:
-		AttributeModifier.OperationType.ADD:add(dot_value)
-		AttributeModifier.OperationType.SUB:sub(dot_value)
-		AttributeModifier.OperationType.MULT:mult(dot_value)
-		AttributeModifier.OperationType.DIVIDE:div(dot_value)
-		AttributeModifier.OperationType.SET:set_value(dot_value)
 
 func get_base_value() -> float:
 	return base_value
@@ -83,7 +71,8 @@ func get_base_value() -> float:
 func get_value() -> float:
 	var attribute_value = computed_value
 	for _buff in buffs:
-		attribute_value = _buff.operate(attribute_value)
+		if _buff.policy != AttributeBuff.DurationPolicy.Period:
+			attribute_value = _buff.operate(attribute_value)
 	attribute_value = post_attribute_value_changed(attribute_value)
 	return attribute_value
 
@@ -117,6 +106,11 @@ func get_buff_size() -> int:
 	return buffs.size()
 
 
+func apply_buff_operation(_buff: AttributeBuff):
+	if is_instance_valid(_buff):
+		computed_value = post_attribute_value_changed(_buff.operate(computed_value))
+
+
 ## @ return: 返回duplicated之后的buff引用，remove_buff需传入此引用。
 func add_buff(_buff: AttributeBuff) -> AttributeBuff:
 	if not is_instance_valid(_buff):
@@ -137,6 +131,7 @@ func add_buff(_buff: AttributeBuff) -> AttributeBuff:
 
 	if should_append_buff:
 		var duplicated_buff = _buff.duplicate_buff()
+		duplicated_buff.applied_attribute = weakref(self)
 		buffs.append(duplicated_buff)
 		pending_add_buff = duplicated_buff
 
